@@ -223,11 +223,10 @@ const run = async () => {
     }
 
     const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
-    const {payload} = github.context;
+    const {payload, ref: prMergeBranchName} = github.context;
     if (!payload.repository || !payload.pull_request) return;
     const prBranch = payload.pull_request.head.ref;
     const prNumber = payload.pull_request.number;
-    const prMergeBranchName = payload.ref;
     const owner = payload.repository.owner.login;
     const repo = payload.repository.name;
 
