@@ -227,6 +227,7 @@ const run = async () => {
     if (!payload.repository || !payload.pull_request) return;
     const prBranch = payload.pull_request.head.ref;
     const prNumber = payload.pull_request.number;
+    const prMergeBranchName = payload.ref;
     const owner = payload.repository.owner.login;
     const repo = payload.repository.name;
 
@@ -238,7 +239,7 @@ const run = async () => {
 
     const [targetStats, prStats] = await Promise.all([
       getBranchStats(targetBranch, dirGlob, script),
-      getBranchStats(prBranch, dirGlob, script),
+      getBranchStats(prMergeBranchName, dirGlob, script),
     ]);
 
     info('='.repeat(50));
