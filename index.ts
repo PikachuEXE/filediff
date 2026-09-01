@@ -56,12 +56,17 @@ const getBranchStats = async (
   branch: string,
   dirGlob: string,
   script?: string,
+  sha?: string,
 ) => {
   info(`[${branch}] copy repo and git checkout `);
   const tempDir = '.filediff';
   const cwd = `../${tempDir}/${branch}`;
   await fs.promises.cp('.', cwd, {recursive: true});
-  await exec('git', ['fetch', 'origin', branch], {cwd});
+  if (sha != null) {
+    await exec('git', ['fetch', 'origin', `+${sha}:${branch}`], {cwd});
+  } else {
+    await exec('git', ['fetch', 'origin', branch], {cwd});
+  }
   await exec('git', ['checkout', branch], {cwd});
 
   if (script) {
@@ -223,7 +228,7 @@ const run = async () => {
     }
 
     const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
-    const {payload, ref: prMergeBranchName} = github.context;
+    const {payload, ref: prMergeBranchName, sha} = github.context;
     if (!payload.repository || !payload.pull_request) return;
     const prBranch = payload.pull_request.head.ref;
     const prNumber = payload.pull_request.number;
@@ -238,7 +243,7 @@ const run = async () => {
 
     const [targetStats, prStats] = await Promise.all([
       getBranchStats(targetBranch, dirGlob, script),
-      getBranchStats(prMergeBranchName, dirGlob, script),
+      getBranchStats(prMergeBranchName, dirGlob, script, sha),
     ]);
 
     info('='.repeat(50));
